@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>St. Clair — Weekly Availability</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* ── BASE THEME ── */
+:root {
+  --red: #C8102E;
+  --black: #111111;
+  --white: #F5F3EF;
+  --gray: #888;
+  --light: #E8E5DF;
+  --card: #FFFFFF;
+  --border: #D8D4CC;
+  --font: 'DM Sans', sans-serif;
+}
+
+/* ── GUAC THEME ── */
+body.guac {
+  --red: #5A7A2E;
+  --black: #2C3E1A;
+  --white: #F2F7EC;
+  --gray: #7A9A5A;
+  --light: #DDE8C8;
+  --card: #FAFDF6;
+  --border: #C2D9A0;
+}
+body.guac header { background: linear-gradient(135deg, #2C3E1A 0%, #3D5C20 100%); }
+body.guac .logo-text { color: #A8C878; }
+body.guac .week-badge { background: rgba(168,200,120,0.2); color: #A8C878; }
+body.guac .tab.active { border-bottom-color: #5A7A2E; color: #2C3E1A; }
+body.guac .tabs { background: #FAFDF6; }
+body.guac .submit-btn { background: linear-gradient(135deg, #5A7A2E, #3D5C20); }
+body.guac .submit-btn:hover { background: linear-gradient(135deg, #4A6A1E, #2D4C10); }
+body.guac .filter-chip.active { background: #5A7A2E; border-color: #5A7A2E; }
+body.guac .filter-chip:hover { border-color: #5A7A2E; color: #2C3E1A; }
+body.guac .hm-table th { background: linear-gradient(135deg, #2C3E1A, #3D5C20); }
+body.guac .hm-section-row td { background: #DDE8C8; color: #3D5C20; }
+body.guac .dl-btn { background: linear-gradient(135deg, #5A7A2E, #3D5C20); }
+body.guac .sugg-tab.active { background: #5A7A2E; border-color: #5A7A2E; }
+body.guac .sugg-submit { background: #5A7A2E; }
+body.guac .sugg-submit:hover { background: #3D5C20; }
+body.guac .card { border-color: #C2D9A0; }
+body.guac .hm-wrap { border-color: #C2D9A0; }
+body.guac .day-section { border-color: #C2D9A0; }
+body.guac .person-card { border-color: #C2D9A0; }
+body.guac .menu-panel { border-color: #C2D9A0; }
+body.guac body { background-image: radial-gradient(circle at 20% 50%, rgba(90,122,46,0.04) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(61,92,32,0.04) 0%, transparent 60%); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--white); font-family: var(--font); color: var(--black); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+/* ── HEADER ── */
+header {
+  background: var(--black); color: var(--white);
+  padding: 0 16px; display: flex; align-items: center;
+  justify-content: space-between; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.logo-text { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.week-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  background: rgba(255,255,255,0.1); padding: 4px 10px;
+  border-radius: 20px; color: rgba(255,255,255,0.65); white-space: nowrap;
+}
+
+/* ── SLIDE MENU ── */
+.menu-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  pointer-events: none;
+}
+.menu-overlay.open { pointer-events: all; }
+
+.menu-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.32s ease;
+  will-change: opacity;
+}
+.menu-overlay.open .menu-backdrop { opacity: 1; }
+
+.menu-panel {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 280px; max-width: 80vw;
+  background: var(--card);
+  box-shadow: 6px 0 48px rgba(0,0,0,0.2);
+  display: flex; flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  overflow-y: auto; overflow-x: hidden;
+}
+body.guac .menu-panel { background: #FAFDF6; }
+.menu-overlay.open .menu-panel { transform: translateX(0); }
+
+.menu-logo-area {
+  padding: 28px 22px 22px;
+  background: var(--black);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  flex-shrink: 0;
+}
+body.guac .menu-logo-area { background: linear-gradient(135deg, #2C3E1A, #3D5C20); }
+
+.menu-logo-area img {
+  height: 72px; width: auto;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.3));
+  transition: opacity 0.28s ease,
+              transform 0.32s cubic-bezier(0.34, 1.3, 0.64, 1);
+  opacity: 0;
+  transform: scale(0.4) translate(-60px, -40px);
+  transform-origin: top left;
+  will-change: transform, opacity;
+}
+.menu-overlay.open .menu-logo-area img {
+  opacity: 1;
+  transform: scale(1) translate(0, 0);
+  transition-delay: 0.04s;
+}
+
+.menu-logo-title {
+  color: white; font-size: 15px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  opacity: 0; transform: translateX(-10px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  transition-delay: 0.14s;
+}
+.menu-overlay.open .menu-logo-title { opacity: 1; transform: translateX(0); }
+
+.menu-logo-sub {
+  color: rgba(255,255,255,0.5); font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  opacity: 0; transform: translateX(-10px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+  transition-delay: 0.18s;
+}
+.menu-overlay.open .menu-logo-sub { opacity: 1; transform: translateX(0); }
+
+/* Header logo shrinks/grows smoothly */
+.logo img {
+  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  will-change: opacity, transform;
+  transform-origin: top left;
+}
+.logo img.menu-open {
+  opacity: 0;
+  transform: scale(1.5) translate(4px, 4px);
+  pointer-events: none;
+}
+
+.menu-items {
+  padding: 12px 8px; flex: 1;
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.menu-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 10px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--black);
+  border: none; background: none; width: 100%; text-align: left;
+  transition: background 0.12s;
+  font-family: var(--font);
+  opacity: 0; transform: translateX(-12px);
+  transition: opacity 0.24s ease, transform 0.24s ease, background 0.12s;
+}
+.menu-overlay.open .menu-item:nth-child(1) { opacity:1; transform:translateX(0); transition-delay: 0.18s; }
+.menu-overlay.open .menu-item:nth-child(2) { opacity:1; transform:translateX(0); transition-delay: 0.22s; }
+.menu-overlay.open .menu-item:nth-child(3) { opacity:1; transform:translateX(0); transition-delay: 0.26s; }
+.menu-overlay.open .menu-item:nth-child(4) { opacity:1; transform:translateX(0); transition-delay: 0.30s; }
+.menu-overlay.open .menu-item:nth-child(5) { opacity:1; transform:translateX(0); transition-delay: 0.34s; }
+.menu-item:hover { background: var(--light); }
+.menu-item .mi-icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.menu-sep { height: 1px; background: var(--border); margin: 6px 8px; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: var(--card); padding: 0 16px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 13px 14px; font-size: 13px; font-weight: 500;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  color: var(--gray); transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+}
+.tab.active { color: var(--black); border-bottom-color: var(--red); }
+
+main { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
+
+/* ── CARD ── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.card-header { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.card-title { font-size: 15px; font-weight: 600; }
+.card-subtitle { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.card-body { padding: 20px; }
+
+.field-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); margin-bottom: 8px; }
+
+select, textarea {
+  width: 100%; padding: 11px 14px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: var(--font); font-size: 14px; color: var(--black);
+  background: var(--white); appearance: none; -webkit-appearance: none;
+  outline: none; transition: border-color 0.15s; cursor: pointer;
+}
+select:focus, textarea:focus { border-color: var(--black); }
+.select-wrap { position: relative; }
+.select-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--gray); pointer-events: none; }
+
+/* ── AVAILABILITY FORM ── */
+.schedule-grid { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+.day-row { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 10px; }
+.day-label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.day-date { font-size: 10px; color: var(--gray); font-family: 'DM Mono', monospace; margin-top: 1px; }
+.shift-options { display: flex; gap: 5px; }
+.shift-pill {
+  flex: 1; text-align: center; padding: 7px 4px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; border: 1.5px solid var(--border);
+  background: transparent; color: var(--black); cursor: pointer; transition: all 0.12s;
+  font-family: var(--font); white-space: nowrap;
+}
+.shift-pill:hover { border-color: var(--black); background: var(--light); }
+.shift-pill.disabled-pill { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.shift-pill.sel-opening { background: #FFF3CD; border-color: #E6A817; color: #7A5200; }
+.shift-pill.sel-mid     { background: #D4EDDA; border-color: #28A745; color: #155724; }
+.shift-pill.sel-closing { background: #CCE5FF; border-color: #0066CC; color: #003880; }
+.shift-pill.sel-anytime { background: #E8D5FF; border-color: #6F42C1; color: #3B1A7A; }
+.shift-pill.sel-off     { background: #F8D7DA; border-color: #DC3545; color: #721C24; }
+
+textarea { resize: vertical; min-height: 70px; cursor: text; margin-top: 4px; }
+
+.submit-btn {
+  margin-top: 20px; width: 100%; padding: 13px;
+  background: var(--black); color: white; border: none; border-radius: 8px;
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.02em; transition: background 0.15s;
+}
+.submit-btn:hover { background: #333; }
+.submit-btn:disabled { background: var(--light); color: var(--gray); cursor: not-allowed; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--black); color: white; padding: 12px 24px;
+  border-radius: 24px; font-size: 13px; font-weight: 500;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,.64,1);
+  z-index: 999; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── FILTER ROWS ── */
+.filter-block { margin-bottom: 14px; }
+.filter-row { display: flex; gap: 6px; align-items: center; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; flex-wrap: nowrap; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row + .filter-row { margin-top: 6px; }
+.filter-row-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); flex-shrink: 0; min-width: 34px; }
+.filter-chip { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); font-size: 12px; font-weight: 500; font-family: var(--font); color: var(--gray); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.filter-chip:hover { border-color: var(--black); color: var(--black); }
+.filter-chip.active { background: var(--black); border-color: var(--black); color: white; }
+
+/* ── VIEW HEADERS ── */
+#overview-view, #scheduling-view, #suggestions-view { display: none; }
+.view-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.view-title { font-size: 15px; font-weight: 600; }
+.view-sub { font-size: 11px; color: var(--gray); font-family: 'DM Mono', monospace; }
+
+/* ── LEGEND ── */
+.legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--gray); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── HEAT MAP / OVERVIEW ── */
+.hm-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.hm-scroll { overflow-x: auto; }
+.hm-table { width: 100%; border-collapse: collapse; min-width: 520px; }
+.hm-table th { background: var(--black); color: white; padding: 8px 10px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.hm-table th.name-th { text-align: left; min-width: 120px; }
+.hm-table th.day-th { text-align: center; }
+.hm-table th.notes-th { text-align: left; min-width: 160px; }
+.hm-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.hm-table tr:last-child td { border-bottom: none; }
+.hm-table .hm-name { font-size: 12px; font-weight: 600; padding: 6px 10px; white-space: nowrap; }
+.hm-table .hm-notes { font-size: 11px; color: var(--gray); padding: 6px 8px; }
+
+/* Notes expand on desktop */
+.notes-cell-inner {
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  overflow: hidden; cursor: pointer; max-width: 200px;
+  transition: all 0.2s;
+}
+.notes-cell-inner.expanded {
+  display: block; -webkit-line-clamp: unset; white-space: normal;
+}
+.notes-expand-hint { font-size: 10px; color: var(--red); cursor: pointer; white-space: nowrap; margin-top: 2px; display: none; }
+@media (min-width: 601px) {
+  .notes-expand-hint { display: block; }
+  .hm-table .hm-notes { max-width: none; }
+}
+
+.hm-cell { width: 48px; height: 28px; border-radius: 5px; font-size: 8px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; margin: 0 auto; letter-spacing: 0.03em; }
+.hm-opening { background: #FFF3CD; color: #7A5200; }
+.hm-mid     { background: #D4EDDA; color: #155724; }
+.hm-closing { background: #CCE5FF; color: #003880; }
+.hm-anytime { background: #E8D5FF; color: #3B1A7A; }
+.hm-off     { background: #F8D7DA; color: #721C24; }
+.hm-none    { background: var(--light); color: #bbb; }
+.hm-section-row td { background: var(--light); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); padding: 5px 10px; border-bottom: 1px solid var(--border); }
+
+/* ── MOBILE CARDS ── */
+.mobile-cards { display: none; }
+.group-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); margin: 18px 0 8px; }
+.group-label:first-child { margin-top: 0; }
+.person-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+.person-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.person-name { font-size: 14px; font-weight: 600; }
+.person-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
+.person-day { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.person-day-label { font-size: 9px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gray); }
+.pdc { width: 100%; text-align: center; padding: 4px 2px; border-radius: 4px; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.pdc-opening { background: #FFF3CD; color: #7A5200; }
+.pdc-mid     { background: #D4EDDA; color: #155724; }
+.pdc-closing { background: #CCE5FF; color: #003880; }
+.pdc-anytime { background: #E8D5FF; color: #3B1A7A; }
+.pdc-off     { background: #F8D7DA; color: #721C24; }
+.pdc-none    { background: var(--light); color: #ccc; }
+.person-notes-row { font-size: 11px; color: var(--gray); border-top: 1px solid var(--light); padding-top: 8px; line-height: 1.5; word-break: break-word; }
+
+/* ── SCHEDULING ── */
+.sched-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.dl-btn { display: flex; align-items: center; gap: 6px; padding: 9px 18px; background: var(--red); color: white; border: none; border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+.dl-btn:hover { opacity: 0.88; }
+.dl-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.day-section { margin-bottom: 10px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.day-section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--card); cursor: pointer; transition: background 0.1s; }
+.day-section-header:hover { background: var(--light); }
+.day-section-header.open { border-bottom: 1px solid var(--border); }
+.dsh-left { display: flex; align-items: center; gap: 10px; }
+.dsh-day { font-size: 14px; font-weight: 600; }
+.dsh-date { font-size: 11px; color: var(--gray); font-family: 'DM Mono', monospace; }
+.dsh-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.dsh-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.dsh-chevron { font-size: 12px; color: var(--gray); transition: transform 0.2s; }
+.dsh-chevron.open { transform: rotate(180deg); }
+.day-body { padding: 14px 16px; background: var(--card); }
+.sched-col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray); margin-bottom: 8px; }
+.sched-entries { display: flex; flex-direction: column; gap: 5px; }
+.shift-group { margin-bottom: 10px; }
+.shift-group:last-child { margin-bottom: 0; }
+.sg-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.sg-dot { width: 8px; height: 8px; border-radius: 2px; }
+.sg-people { display: flex; flex-wrap: wrap; gap: 5px; }
+.sg-person { padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1.5px solid var(--border); background: var(--white); }
+.sg-opening { background: #FFF3CD; border-color: #E6A817; color: #7A5200; }
+.sg-mid     { background: #D4EDDA; border-color: #28A745; color: #155724; }
+.sg-closing { background: #CCE5FF; border-color: #0066CC; color: #003880; }
+.sg-anytime { background: #E8D5FF; border-color: #6F42C1; color: #3B1A7A; }
+.sg-off     { background: #F8D7DA; border-color: #DC3545; color: #721C24; }
+.sg-none { font-size: 12px; color: #bbb; font-style: italic; }
+
+/* ── SUGGESTIONS ── */
+.sugg-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.sugg-tab { padding: 8px 18px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; transition: all 0.12s; font-family: var(--font); }
+.sugg-tab.active { background: var(--black); border-color: var(--black); color: white; }
+.sugg-form-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.sugg-textarea { width: 100%; min-height: 120px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font); font-size: 13px; color: var(--black); background: var(--white); outline: none; resize: vertical; transition: border-color 0.15s; }
+.sugg-textarea:focus { border-color: var(--black); }
+.sugg-submit { margin-top: 12px; padding: 11px 24px; background: var(--black); color: white; border: none; border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.sugg-submit:hover { background: #333; }
+.sugg-list { display: flex; flex-direction: column; gap: 10px; }
+.sugg-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.sugg-item-text { font-size: 13px; line-height: 1.6; color: var(--black); }
+.sugg-item-meta { font-size: 10px; color: var(--gray); margin-top: 6px; font-family: 'DM Mono', monospace; }
+.sugg-empty { text-align: center; padding: 40px; color: var(--gray); font-size: 13px; }
+
+.empty-state { padding: 50px 24px; text-align: center; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--gray); }
+
+/* ── ADMIN ── */
+#admin-view { display: none; }
+.admin-lock {
+  max-width: 400px; margin: 60px auto; text-align: center;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 40px 32px;
+}
+.admin-lock .lock-icon { font-size: 40px; margin-bottom: 16px; }
+.admin-lock-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.admin-lock-sub { font-size: 13px; color: var(--gray); margin-bottom: 24px; }
+.admin-pin-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+.admin-pin-input {
+  width: 52px; height: 56px; text-align: center;
+  font-size: 22px; font-weight: 700; border: 2px solid var(--border);
+  border-radius: 10px; background: var(--white); color: var(--black);
+  outline: none; transition: border-color 0.15s; font-family: 'DM Mono', monospace;
+}
+.admin-pin-input:focus { border-color: var(--black); }
+.admin-pin-btn {
+  width: 100%; padding: 13px; background: var(--black); color: white;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: var(--font); transition: background 0.15s;
+}
+.admin-pin-btn:hover { background: #333; }
+body.guac .admin-pin-btn { background: linear-gradient(135deg,#5A7A2E,#3D5C20); }
+
+.admin-panel { display: none; }
+.admin-panel.unlocked { display: block; }
+.admin-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.admin-section-header {
+  padding: 14px 20px; background: var(--black); color: white;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+  display: flex; align-items: center; justify-content: space-between;
+}
+body.guac .admin-section-header { background: linear-gradient(135deg,#2C3E1A,#3D5C20); }
+.admin-section-body { padding: 16px 20px; }
+
+.admin-employee-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.admin-employee-row:last-child { border-bottom: none; }
+.admin-emp-name { font-size: 13px; font-weight: 600; min-width: 100px; }
+.admin-emp-group { font-size: 11px; color: var(--gray); min-width: 110px; }
+.admin-emp-station { font-size: 11px; color: var(--gray); min-width: 80px; }
+.admin-emp-actions { display: flex; gap: 6px; margin-left: auto; }
+
+.admin-input {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; font-family: var(--font); background: var(--white);
+  color: var(--black); outline: none; width: 100%;
+}
+.admin-input:focus { border-color: var(--black); }
+.admin-select {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; font-family: var(--font); background: var(--white);
+  color: var(--black); outline: none; appearance: none; cursor: pointer;
+}
+
+.admin-btn {
+  padding: 6px 12px; border-radius: 6px; border: 1.5px solid var(--border);
+  font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font);
+  background: var(--white); color: var(--black); transition: all 0.12s; white-space: nowrap;
+}
+.admin-btn:hover { background: var(--light); }
+.admin-btn.danger { border-color: #DC3545; color: #DC3545; }
+.admin-btn.danger:hover { background: #F8D7DA; }
+.admin-btn.primary { background: var(--black); color: white; border-color: var(--black); }
+.admin-btn.primary:hover { background: #333; }
+body.guac .admin-btn.primary { background: #5A7A2E; border-color: #5A7A2E; }
+
+.add-employee-form {
+  display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px; align-items: end; margin-top: 12px; flex-wrap: wrap;
+}
+@media (max-width: 600px) { .add-employee-form { grid-template-columns: 1fr 1fr; } }
+
+.admin-stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.admin-stat { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.admin-stat-num { font-size: 28px; font-weight: 700; color: var(--black); }
+.admin-stat-label { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+.admin-override-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
+.admin-override-row:last-child { border-bottom: none; }
+.admin-override-label { font-size: 13px; font-weight: 500; }
+.admin-override-sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; background: var(--border);
+  border-radius: 24px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  left: 3px; bottom: 3px; background: white; border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: #28A745; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+.admin-sugg-item { padding: 10px 12px; background: var(--white); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 10px; }
+.admin-sugg-text { flex: 1; font-size: 12px; line-height: 1.5; }
+.admin-sugg-meta { font-size: 10px; color: var(--gray); margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+/* LOCKED STATE */
+.locked-banner {
+  background: var(--black); color: white;
+  border-radius: 12px; padding: 32px 24px;
+  text-align: center; margin-bottom: 16px;
+}
+body.guac .locked-banner { background: linear-gradient(135deg, #2C3E1A, #3D5C20); }
+.locked-banner .lock-icon { font-size: 36px; margin-bottom: 12px; }
+.locked-banner .lock-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.locked-banner .lock-sub { font-size: 13px; opacity: 0.65; line-height: 1.6; }
+.locked-banner .lock-next { margin-top: 16px; font-size: 12px; opacity: 0.5; font-family: 'DM Mono', monospace; }
+.form-locked { opacity: 0.4; pointer-events: none; user-select: none; filter: blur(1px); }
+
+@media (max-width: 600px) {
+  .hm-wrap { display: none; }
+  .mobile-cards { display: block; }
+  .shift-pill { font-size: 11px; }
+}
+@media (min-width: 601px) {
+  .mobile-cards { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="toggleMenu()">
+    <img src="https://c.tenor.com/a3cG1goFvE0AAAAi/guacward-avocado-adventures.gif" style="height:38px;width:auto;flex-shrink:0;" alt="logo"/>
+    <span class="logo-text">St. Clair · 5518</span>
+  </div>
+  <div class="week-badge" id="weekBadge">—</div>
+</header>
+
+<!-- LOGO MENU -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-backdrop" onclick="closeMenu()"></div>
+  <div class="menu-panel">
+    <div class="menu-logo-area">
+      <img src="https://c.tenor.com/a3cG1goFvE0AAAAi/guacward-avocado-adventures.gif" alt="logo" id="menuLogo"/>
+      <div class="menu-logo-title">St. Clair · 5518</div>
+      <div class="menu-logo-sub" id="menuWeekLabel">—</div>
+    </div>
+    <div class="menu-items">
+      <button class="menu-item" onclick="openMenuTab('suggestions')">
+        <span class="mi-icon">💬</span>
+        <span>Any Suggestions?</span>
+      </button>
+      <div class="menu-sep"></div>
+      <button class="menu-item" onclick="openMenuTab('admin')">
+        <span class="mi-icon">🔐</span>
+        <span>Admin</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tabSubmit"      onclick="switchTab('submit')">My Availability</div>
+  <div class="tab"        id="tabOverview"    onclick="switchTab('overview')">Overview</div>
+  <div class="tab"        id="tabScheduling"  onclick="switchTab('scheduling')">Scheduling</div>
+  <div class="tab"        id="tabSuggestions" onclick="switchTab('suggestions')" style="display:none">Suggestions</div>
+  <div class="tab"        id="tabAdmin"       onclick="switchTab('admin')" style="display:none">⚙️ Admin</div>
+</div>
+
+<main>
+
+<!-- ═══ TAB 1 — MY AVAILABILITY ═══ -->
+<div id="submit-view">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Update your availability</div>
+      <div class="card-subtitle">Select your name first, then tap each day and submit</div>
+    </div>
+    <div class="card-body">
+      <div class="field-label">Your name</div>
+      <div class="select-wrap">
+        <select id="nameSelect" onchange="onNameChange()">
+          <option value="">— Select your name —</option>
+        </select>
+      </div>
+      <div class="schedule-grid" id="scheduleGrid"></div>
+      <div class="field-label" style="margin-top:20px">Notes (optional)</div>
+      <textarea id="notesInput" placeholder="Time-off requests, specific hours, anything the manager should know…" disabled></textarea>
+      <button class="submit-btn" id="submitBtn" onclick="submitAvailability()" disabled>Submit availability</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB 2 — OVERVIEW ═══ -->
+<div id="overview-view">
+  <div class="view-top">
+    <div>
+      <div class="view-title">Team Availability</div>
+      <div class="view-sub" id="submittedCount">0 submitted</div>
+    </div>
+  </div>
+  <div class="filter-block">
+    <div class="filter-row" id="dayFilterRow"></div>
+    <div class="filter-row" id="roleFilterRow"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#E6A817"></div>Opening</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#28A745"></div>Mid</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#0066CC"></div>Closing</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6F42C1"></div>Anytime</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#DC3545"></div>Off</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#D8D4CC"></div>No response</div>
+  </div>
+  <div class="hm-wrap"><div class="hm-scroll" id="hmContent"></div></div>
+  <div class="mobile-cards" id="mobileContent"></div>
+</div>
+
+<!-- ═══ TAB 3 — SCHEDULING ═══ -->
+<div id="scheduling-view">
+  <div class="sched-toolbar">
+    <div>
+      <div class="view-title">Weekly Schedule</div>
+      <div class="view-sub" id="schedWeekLabel">—</div>
+    </div>
+    <button class="dl-btn" onclick="downloadDocx()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 2v9M4 8l4 4 4-4"/><path d="M2 13h12"/>
+      </svg>
+      Download .docx
+    </button>
+  </div>
+  <div id="schedContent"></div>
+</div>
+
+<!-- ═══ TAB 4 — SUGGESTIONS ═══ -->
+<div id="suggestions-view">
+  <div class="view-top">
+    <div class="view-title">Suggestions</div>
+  </div>
+  <div class="sugg-tabs">
+    <button class="sugg-tab active" id="suggTabWrite" onclick="switchSuggTab('write')">✏️ Make a Suggestion</button>
+    <button class="sugg-tab" id="suggTabList" onclick="switchSuggTab('list')">📋 Suggestion List</button>
+  </div>
+  <div id="suggWriteView">
+    <div class="sugg-form-card">
+      <div class="field-label">Your suggestion (anonymous)</div>
+      <textarea class="sugg-textarea" id="suggText" placeholder="Any ideas to improve the schedule, the app, or the store? Write it here — no one will know it's you."></textarea>
+      <button class="sugg-submit" onclick="submitSuggestion()">Submit anonymously</button>
+    </div>
+  </div>
+  <div id="suggListView" style="display:none">
+    <div class="sugg-list" id="suggList"></div>
+  </div>
+</div>
+
+<!-- ═══ TAB 5 — ADMIN ═══ -->
+<div id="admin-view">
+
+  <!-- PIN LOCK -->
+  <div class="admin-lock" id="adminLock">
+    <div class="lock-icon">🔐</div>
+    <div class="admin-lock-title">Admin Access</div>
+    <div class="admin-lock-sub">Enter your 4-digit PIN to continue</div>
+    <div class="admin-pin-row">
+      <input class="admin-pin-input" id="pin0" maxlength="1" type="password" inputmode="numeric" oninput="pinNext(this,1)" onkeydown="pinBack(event,this,null)"/>
+      <input class="admin-pin-input" id="pin1" maxlength="1" type="password" inputmode="numeric" oninput="pinNext(this,2)" onkeydown="pinBack(event,this,0)"/>
+      <input class="admin-pin-input" id="pin2" maxlength="1" type="password" inputmode="numeric" oninput="pinNext(this,3)" onkeydown="pinBack(event,this,1)"/>
+      <input class="admin-pin-input" id="pin3" maxlength="1" type="password" inputmode="numeric" oninput="checkPin()" onkeydown="pinBack(event,this,2)"/>
+    </div>
+    <button class="admin-pin-btn" onclick="checkPin()">Unlock</button>
+    <div id="pinError" style="color:#DC3545;font-size:12px;margin-top:10px;display:none">Wrong PIN — try again</div>
+  </div>
+
+  <!-- ADMIN PANEL (shown after PIN) -->
+  <div class="admin-panel" id="adminPanel">
+
+    <!-- Stats -->
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <span>📊 This Week's Snapshot</span>
+        <button class="admin-btn" onclick="refreshAdminStats()" style="font-size:11px;padding:4px 10px">Refresh</button>
+      </div>
+      <div class="admin-section-body">
+        <div class="admin-stat-grid">
+          <div class="admin-stat">
+            <div class="admin-stat-num" id="statSubmitted">—</div>
+            <div class="admin-stat-label">Submitted</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-num" id="statPending">—</div>
+            <div class="admin-stat-label">Pending</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-num" id="statTotal">—</div>
+            <div class="admin-stat-label">Total Staff</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overrides -->
+    <div class="admin-section">
+      <div class="admin-section-header">⚙️ Controls</div>
+      <div class="admin-section-body">
+        <div class="admin-override-row">
+          <div>
+            <div class="admin-override-label">Unlock form outside window</div>
+            <div class="admin-override-sub">Allow submissions outside Sat–Mon</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="overrideToggle" onchange="toggleOverride(this)"/>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="admin-override-row">
+          <div>
+            <div class="admin-override-label">Download .docx</div>
+            <div class="admin-override-sub">Current week availability</div>
+          </div>
+          <button class="admin-btn primary" onclick="downloadDocx()">Download</button>
+        </div>
+        <div class="admin-override-row">
+          <div>
+            <div class="admin-override-label">Clear this week's data</div>
+            <div class="admin-override-sub">Removes all submissions for current week</div>
+          </div>
+          <button class="admin-btn danger" onclick="clearWeekData()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage employees -->
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <span>👥 Manage Staff</span>
+        <span id="staffCount" style="font-size:11px;opacity:.6"></span>
+      </div>
+      <div class="admin-section-body">
+        <!-- Add employee form -->
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+          <div class="field-label" style="margin-bottom:8px">Add new employee</div>
+          <div class="add-employee-form">
+            <div>
+              <div style="font-size:10px;color:var(--gray);margin-bottom:3px">Name</div>
+              <input class="admin-input" id="newEmpName" placeholder="Full name"/>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--gray);margin-bottom:3px">Role</div>
+              <select class="admin-select" id="newEmpGroup" style="width:100%">
+                <option value="GM">GM</option>
+                <option value="Service Manager">Service Manager</option>
+                <option value="Kitchen Manager">Kitchen Manager</option>
+                <option value="CT">CT</option>
+                <option value="Crew" selected>Crew</option>
+                <option value="Minors">Minors</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--gray);margin-bottom:3px">Station</div>
+              <select class="admin-select" id="newEmpStation" style="width:100%">
+                <option value="">— None —</option>
+                <option value="Line">Line</option>
+                <option value="Cash">Cash</option>
+                <option value="Grill">Grill</option>
+                <option value="Prep">Prep</option>
+                <option value="CT BOH">CT BOH</option>
+                <option value="CT FOH">CT FOH</option>
+              </select>
+            </div>
+            <button class="admin-btn primary" onclick="addEmployee()" style="height:34px;margin-top:auto">Add</button>
+          </div>
+        </div>
+        <!-- Employee list -->
+        <div id="adminEmpList"></div>
+      </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <span>💬 Suggestions</span>
+        <button class="admin-btn" onclick="loadAdminSuggestions()" style="font-size:11px;padding:4px 10px">Refresh</button>
+      </div>
+      <div class="admin-section-body" id="adminSuggList">
+        <div style="color:var(--gray);font-size:13px">Loading…</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px">
+      <button class="admin-btn danger" onclick="lockAdmin()">🔒 Lock Admin</button>
+    </div>
+
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+
+<script>
+const SUPABASE_URL = 'https://gqrusdlsrbudsgedypkj.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxcnVzZGxzcmJ1ZHNnZWR5cGtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4Njc2MDIsImV4cCI6MjA5MzQ0MzYwMn0.gRLLwOn6D3t-MHMRLNHRtf3QA1xQo0Rjui8nlEOZjcI';
+
+async function sbFetch(path, method, body) {
+  method = method || 'GET';
+  // sb_publishable keys must be sent as apikey header only
+  // Authorization header must equal apikey exactly (not "Bearer sb_...")
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+  };
+  if (method === 'POST') headers['Prefer'] = 'return=representation';
+  if (method === 'PATCH') headers['Prefer'] = 'return=representation';
+  if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
+
+  const opts = { method: method, headers: headers };
+  if (body) opts.body = JSON.stringify(body);
+
+  const res = await fetch(SUPABASE_URL + path, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('Supabase error:', res.status, err);
+    throw new Error('Supabase ' + res.status + ': ' + err);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+async function saveToSupabase(name, entry) {
+  // First try to update existing row
+  const existing = await sbFetch(
+    '/rest/v1/availability?week_key=eq.' + encodeURIComponent(weekKey) + '&name=eq.' + encodeURIComponent(name)
+  );
+  if (existing && existing.length > 0) {
+    // Row exists - PATCH to update
+    await sbFetch(
+      '/rest/v1/availability?week_key=eq.' + encodeURIComponent(weekKey) + '&name=eq.' + encodeURIComponent(name),
+      'PATCH',
+      { days: entry.days, notes: entry.notes || '', submitted_at: new Date().toISOString() }
+    );
+  } else {
+    // No row yet - INSERT
+    await sbFetch('/rest/v1/availability', 'POST', {
+      week_key: weekKey, name: name, days: entry.days,
+      notes: entry.notes || '', submitted_at: new Date().toISOString(),
+    });
+  }
+}
+async function loadFromSupabase() {
+  try {
+    const rows = await sbFetch('/rest/v1/availability?week_key=eq.' + encodeURIComponent(weekKey) + '&select=*');
+    const data = {};
+    (rows || []).forEach(function(r) { data[r.name] = { days: r.days, notes: r.notes, submitted: r.submitted_at }; });
+    return data;
+  } catch(e) { console.error(e); return {}; }
+}
+async function loadPrevFromSupabase() {
+  try {
+    const rows = await sbFetch('/rest/v1/availability?week_key=neq.' + encodeURIComponent(weekKey) + '&select=name,days,notes,week_key&order=submitted_at.desc');
+    if (!rows || !rows.length) return {};
+    const prevWeek = rows[0].week_key;
+    const data = {};
+    rows.filter(function(r) { return r.week_key === prevWeek; }).forEach(function(r) {
+      data[r.name] = { days: r.days, notes: r.notes, carriedOver: true };
+    });
+    return data;
+  } catch(e) { return {}; }
+}
+async function savesSuggestionToSupabase(text) {
+  await sbFetch('/rest/v1/suggestions', 'POST', { text: text, submitted_at: new Date().toISOString() });
+}
+async function loadSuggestionsFromSupabase() {
+  const rows = await sbFetch('/rest/v1/suggestions?select=*&order=submitted_at.desc');
+  return rows || [];
+}
+
+// ── EMPLOYEES FROM SUPABASE ──
+async function loadEmployeesFromSupabase() {
+  const rows = await sbFetch('/rest/v1/employees?select=*&order=group_name.asc,name.asc');
+  return (rows || []).map(r => ({ name: r.name, group: r.group_name, station: r.station || '' }));
+}
+
+async function addEmployeeToSupabase(name, group, station) {
+  const existing = await sbFetch('/rest/v1/employees?select=display_order&order=display_order.desc&limit=1');
+  const nextOrder = (existing && existing.length > 0) ? (existing[0].display_order + 1) : 1;
+  await sbFetch('/rest/v1/employees', 'POST', {
+    name, group_name: group, station: station || '', display_order: nextOrder
+  });
+}
+
+async function updateEmployeeInSupabase(oldName, name, group, station) {
+  await sbFetch('/rest/v1/employees?name=eq.' + encodeURIComponent(oldName), 'PATCH', {
+    name, group_name: group, station: station || ''
+  });
+}
+
+async function deleteEmployeeFromSupabase(name) {
+  await sbFetch('/rest/v1/employees?name=eq.' + encodeURIComponent(name), 'DELETE');
+}
+
+let EMPLOYEES = [
+  { name: 'Jevie',      group: 'GM',             station: '' },
+  { name: 'Adib',       group: 'Service Manager', station: '' },
+  { name: 'Julius',     group: 'Service Manager', station: '' },
+  { name: 'Geresa',     group: 'Service Manager', station: '' },
+  { name: 'Adrian',     group: 'Kitchen Manager', station: '' },
+  { name: 'Kashish',    group: 'Kitchen Manager', station: '' },
+  { name: 'Anees',      group: 'CT',             station: 'CT BOH' },
+  { name: 'Antonio',    group: 'CT',             station: 'CT BOH' },
+  { name: 'Kinjal',     group: 'CT',             station: 'CT FOH' },
+  { name: 'Luiza',      group: 'CT',             station: 'CT FOH' },
+  { name: 'Mariedhel',  group: 'CT',             station: 'CT FOH' },
+  { name: 'Jada',       group: 'Crew',           station: 'Cash' },
+  { name: 'Jaypee',     group: 'Crew',           station: 'Prep' },
+  { name: 'Bottawee',   group: 'Crew',           station: 'Prep' },
+  { name: 'Henry',      group: 'Crew',           station: 'Grill' },
+  { name: 'Merrick',    group: 'Crew',           station: 'Grill' },
+  { name: 'Nawra',      group: 'Crew',           station: 'Cash' },
+  { name: 'Theresa',    group: 'Crew',           station: 'Line' },
+  { name: 'Shinique',   group: 'Crew',           station: 'Line' },
+  { name: 'Maria',      group: 'Crew',           station: 'Line' },
+  { name: 'Joshua',     group: 'Crew',           station: 'Grill' },
+  { name: 'Kitesha',    group: 'Crew',           station: 'Line' },
+  { name: 'Jasmine',    group: 'Crew',           station: 'Cash' },
+  { name: 'Karim',      group: 'Crew',           station: 'Grill' },
+  { name: 'Ramez',      group: 'Crew',           station: 'Grill' },
+  { name: 'Jeoffed',    group: 'Minors',         station: '' },
+]
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const SHIFTS = ['Opening','Mid','Closing','Anytime','Off'];
+const SK = s => s.toLowerCase().replace(/\s/g,'');
+const GROUP_ORDER = ['GM', 'Service Manager', 'Kitchen Manager', 'CT', 'Crew', 'Minors'];
+
+function sortEmployees(arr) {
+  return arr.sort((a, b) => {
+    const ga = GROUP_ORDER.indexOf(a.group) === -1 ? 99 : GROUP_ORDER.indexOf(a.group);
+    const gb = GROUP_ORDER.indexOf(b.group) === -1 ? 99 : GROUP_ORDER.indexOf(b.group);
+    if (ga !== gb) return ga - gb;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+let ALL_GROUPS = GROUP_ORDER.filter(g => EMPLOYEES.some(e => e.group === g));
+
+
+function getWeekDates() {
+  const today = new Date();
+  const day = today.getDay();
+  const mon = new Date(today);
+  mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1) + 7);
+  return Array.from({length:7}, function(_,i) {
+    const d = new Date(mon);
+    d.setDate(mon.getDate()+i);
+    return d;
+  });
+}
+
+function fmt(d) { return d.toLocaleDateString('en-CA', {month:'short', day:'numeric'}); }
+function fmtLong(d) { return d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}); }
+
+const weekDates = getWeekDates();
+const weekKey = 'avail_' + fmt(weekDates[0]) + '_' + fmt(weekDates[6]);
+
+function isFormOpen() {
+  const day = new Date().getDay();
+  return day === 6 || day === 0 || day === 1;
+}
+
+function getNextOpenDate() {
+  const now = new Date();
+  const day = now.getDay();
+  const next = new Date(now);
+  const daysUntilSat = (6 - day + 7) % 7 || 7;
+  next.setDate(now.getDate() + daysUntilSat);
+  next.setHours(0,0,0,0);
+  return next.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+}
+
+function loadData() {
+  return {};
+}
+
+async function loadDataAsync() {
+  try {
+    showLoadingState(true);
+    // Load employees from DB first
+    try {
+      const dbEmployees = await loadEmployeesFromSupabase();
+      if (dbEmployees && dbEmployees.length > 0) {
+        EMPLOYEES.length = 0;
+        sortEmployees(dbEmployees);
+        dbEmployees.forEach(e => EMPLOYEES.push(e));
+        ALL_GROUPS.length = 0;
+        [...new Set(EMPLOYEES.map(e => e.group))].forEach(g => ALL_GROUPS.push(g));
+        rebuildNameSelect();
+        buildFilterRows();
+      }
+    } catch(e) { console.warn('Could not load employees from DB, using local list', e); }
+    // Load this week from Supabase
+    const current = await loadFromSupabase();
+    // Load prev week for carry-over
+    const prev = await loadPrevFromSupabase();
+
+    const data = {};
+    EMPLOYEES.forEach(e => {
+      if (current[e.name])   data[e.name] = current[e.name];
+      else if (prev[e.name]) data[e.name] = { ...prev[e.name], carriedOver: true };
+    });
+    allData = data;
+
+    // Also mirror to localStorage as backup
+    const cache = {};
+    Object.keys(current).forEach(n => cache[n] = current[n]);
+    localStorage.setItem(weekKey, JSON.stringify(cache));
+
+    showLoadingState(false);
+    renderOverview();
+  } catch(e) {
+    console.error('Failed to load from Supabase, using cache:', e);
+    // Fallback to localStorage
+    try {
+      const cached = JSON.parse(localStorage.getItem(weekKey) || '{}');
+      if (Object.keys(cached).length) {
+        EMPLOYEES.forEach(e => { if (cached[e.name]) allData[e.name] = cached[e.name]; });
+      }
+    } catch {}
+    showLoadingState(false);
+    showToast('⚠️ Offline mode — data may not be current');
+  }
+}
+
+function showLoadingState(loading) {
+  const count = document.getElementById('submittedCount');
+  if (count) count.textContent = loading ? 'Loading…' : '';
+}
+
+async function saveEntry(name, entry) {
+  // Always save to localStorage immediately as backup
+  try {
+    const current = JSON.parse(localStorage.getItem(weekKey) || '{}');
+    current[name] = entry;
+    localStorage.setItem(weekKey, JSON.stringify(current));
+  } catch(e) {}
+  // Save to Supabase — throw on failure so caller knows
+  await saveToSupabase(name, entry);
+}
+
+let allData = loadData();
+let selections = {};
+let activeDayFilter = 'all';
+let activeGroupFilter = 'all';
+
+// ══════════════ INIT ══════════════
+async function init() {
+  document.getElementById('weekBadge').textContent = fmt(weekDates[0]) + ' – ' + fmt(weekDates[6]);
+  document.getElementById('schedWeekLabel').textContent = 'Week of ' + fmt(weekDates[0]) + ' – ' + fmt(weekDates[6]);
+
+  const sel = document.getElementById('nameSelect');
+  ALL_GROUPS.forEach(g => {
+    const og = document.createElement('optgroup');
+    og.label = g;
+    EMPLOYEES.filter(e => e.group === g).forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.name;
+      opt.textContent = e.station ? e.name + ' — ' + e.station : e.name;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+
+  buildGrid();
+  updateSubmitBtn();
+  buildFilterRows();
+  loadSuggestions();
+  const mwl = document.getElementById('menuWeekLabel');
+  if (mwl) mwl.textContent = fmt(weekDates[0]) + ' – ' + fmt(weekDates[6]);
+
+  applyLockState();
+  // Load live data from Supabase
+  loadDataAsync();
+}
+
+function applyLockState() {
+  const open = isFormOpen() || formOverrideOn;
+  const submitView = document.getElementById('submit-view');
+  const cardBody = submitView.querySelector('.card-body');
+
+  // Remove any existing banner
+  const existingBanner = document.getElementById('lockBanner');
+  if (existingBanner) existingBanner.remove();
+
+  if (!open) {
+    // Add banner above the card
+    const banner = document.createElement('div');
+    banner.id = 'lockBanner';
+    banner.className = 'locked-banner';
+    banner.innerHTML = `
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Availability is closed</div>
+      <div class="lock-sub">You can update your availability every<br><strong>Saturday, Sunday and Monday</strong></div>
+      <div class="lock-next">Opens again · ${getNextOpenDate()}</div>
+    `;
+    submitView.insertBefore(banner, submitView.firstChild);
+    // Blur and disable the form
+    cardBody.classList.add('form-locked');
+    document.getElementById('nameSelect').disabled = true;
+    document.getElementById('notesInput').disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+  } else {
+    cardBody.classList.remove('form-locked');
+    document.getElementById('nameSelect').disabled = false;
+    // notes/submit stay managed by name selection
+  }
+}
+
+// ══════════════ AVAILABILITY FORM ══════════════
+function buildGrid() {
+  const grid = document.getElementById('scheduleGrid');
+  grid.innerHTML = '';
+  DAYS.forEach((day, i) => {
+    const row = document.createElement('div');
+    row.className = 'day-row';
+    const lbl = document.createElement('div');
+    lbl.innerHTML = `<div class="day-label">${day}</div><div class="day-date">${fmt(weekDates[i])}</div>`;
+    const pills = document.createElement('div');
+    pills.className = 'shift-options';
+    SHIFTS.forEach(shift => {
+      const btn = document.createElement('button');
+      btn.className = 'shift-pill disabled-pill';
+      btn.textContent = shift;
+      btn.dataset.day = i; btn.dataset.shift = shift;
+      btn.onclick = () => selectShift(i, shift, btn);
+      pills.appendChild(btn);
+    });
+    row.appendChild(lbl); row.appendChild(pills);
+    grid.appendChild(row);
+  });
+}
+
+function setFormEnabled(enabled) {
+  document.querySelectorAll('.shift-pill').forEach(p => {
+    if (enabled) p.classList.remove('disabled-pill');
+    else { p.classList.add('disabled-pill'); }
+  });
+  document.getElementById('notesInput').disabled = !enabled;
+}
+
+function selectShift(dayIdx, shift, btn) {
+  if (!document.getElementById('nameSelect').value) return;
+  document.querySelectorAll(`.shift-pill[data-day="${dayIdx}"]`).forEach(p => {
+    p.className = 'shift-pill' + (document.getElementById('nameSelect').value ? '' : ' disabled-pill');
+  });
+  selections[dayIdx] = shift;
+  btn.className = 'shift-pill sel-' + SK(shift);
+  updateSubmitBtn();
+}
+
+function onNameChange() {
+  const name = document.getElementById('nameSelect').value;
+  selections = {};
+  document.querySelectorAll('.shift-pill').forEach(p => p.className = 'shift-pill' + (name ? '' : ' disabled-pill'));
+  document.getElementById('notesInput').value = '';
+  setFormEnabled(!!name);
+
+  if (name && allData[name]) {
+    const ex = allData[name];
+    DAYS.forEach((_, i) => {
+      if (ex.days[i]) {
+        selections[i] = ex.days[i];
+        const pill = document.querySelector(`.shift-pill[data-day="${i}"][data-shift="${ex.days[i]}"]`);
+        if (pill) pill.className = 'shift-pill sel-' + SK(ex.days[i]);
+      }
+    });
+    document.getElementById('notesInput').value = ex.notes || '';
+  }
+  updateSubmitBtn();
+}
+
+function updateSubmitBtn() {
+  const name = document.getElementById('nameSelect').value;
+  document.getElementById('submitBtn').disabled = !(name && Object.keys(selections).length === 7);
+}
+
+async function submitAvailability() {
+  const name = document.getElementById('nameSelect').value;
+  const notes = document.getElementById('notesInput').value.trim();
+  const days = DAYS.map((_, i) => selections[i] || '');
+  const entry = { days, notes, submitted: new Date().toISOString() };
+
+  // Disable button while saving
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    await saveEntry(name, entry);
+    allData[name] = entry;
+    showToast('✓ Saved for ' + name);
+    // Refresh overview live
+    renderOverview();
+  } catch(e) {
+    console.error('Submit error:', e);
+    showToast('❌ Failed to save — check connection');
+    btn.textContent = 'Submit availability';
+    btn.disabled = false;
+    return;
+  }
+
+  document.getElementById('nameSelect').value = '';
+  selections = {};
+  document.querySelectorAll('.shift-pill').forEach(p => p.className = 'shift-pill disabled-pill');
+  document.getElementById('notesInput').value = '';
+  document.getElementById('notesInput').disabled = true;
+  updateSubmitBtn();
+}
+
+// ══════════════ FILTER ROWS ══════════════
+function buildFilterRows() {
+  const dayRow = document.getElementById('dayFilterRow');
+  const roleRow = document.getElementById('roleFilterRow');
+  dayRow.innerHTML = roleRow.innerHTML = '';
+
+  const dl = document.createElement('span'); dl.className = 'filter-row-label'; dl.textContent = 'Days';
+  dayRow.appendChild(dl);
+  [{ label:'All', v:'all' }, ...DAYS.map((d,i) => ({ label:d, v:String(i) }))].forEach(f => {
+    const c = document.createElement('button');
+    c.className = 'filter-chip' + (activeDayFilter === f.v ? ' active' : '');
+    c.textContent = f.label;
+    c.onclick = () => { activeDayFilter = f.v; buildFilterRows(); renderOverview(); };
+    dayRow.appendChild(c);
+  });
+
+  const rl = document.createElement('span'); rl.className = 'filter-row-label'; rl.textContent = 'Role';
+  roleRow.appendChild(rl);
+  [{ label:'All', v:'all' }, ...ALL_GROUPS.map(g => ({ label:g, v:g }))].forEach(f => {
+    const c = document.createElement('button');
+    c.className = 'filter-chip' + (activeGroupFilter === f.v ? ' active' : '');
+    c.textContent = f.label;
+    c.onclick = () => { activeGroupFilter = f.v; buildFilterRows(); renderOverview(); };
+    roleRow.appendChild(c);
+  });
+}
+
+// ══════════════ OVERVIEW ══════════════
+function renderOverview() {
+  const submitted = Object.values(allData).filter(e => e && !e.carriedOver).length;
+  document.getElementById('submittedCount').textContent = submitted + ' updated this week · ' + EMPLOYEES.length + ' total';
+
+  const filtered = EMPLOYEES.filter(e => activeGroupFilter === 'all' || e.group === activeGroupFilter);
+  const groups = GROUP_ORDER.filter(g => filtered.some(e => e.group === g));
+
+  const hmLabel = s => ({ Opening:'Open', Mid:'Mid', Closing:'Close', Anytime:'Any', Off:'Off' }[s] || '—');
+  const daysToShow = activeDayFilter === 'all'
+    ? DAYS.map((d,i) => ({ label:d, idx:i }))
+    : [{ label: DAYS[+activeDayFilter], idx: +activeDayFilter }];
+
+  const dayHeaders = daysToShow.map(({label, idx}) =>
+    `<th class="day-th">${label}<br><span style="font-weight:400;opacity:.5;font-size:9px">${fmt(weekDates[idx])}</span></th>`
+  ).join('');
+
+  let h = `<table class="hm-table"><thead><tr>
+    <th class="name-th">Employee</th>${dayHeaders}<th class="notes-th">Notes</th>
+  </tr></thead><tbody>`;
+
+  groups.forEach(g => {
+    h += `<tr class="hm-section-row"><td colspan="${daysToShow.length + 2}">${g}</td></tr>`;
+    filtered.filter(e => e.group === g).forEach(e => {
+      const entry = allData[e.name];
+      const cells = daysToShow.map(({idx}) => {
+        const shift = entry?.days[idx] || '';
+        return `<td><div class="hm-cell ${shift ? 'hm-'+SK(shift) : 'hm-none'}">${hmLabel(shift)}</div></td>`;
+      }).join('');
+
+      const stationBadge = e.station ? `<span style="font-size:9px;font-weight:600;color:var(--gray);margin-left:5px;text-transform:uppercase;letter-spacing:0.04em">${e.station}</span>` : '';
+      const carryBadge = entry?.carriedOver ? `<span style="font-size:9px;color:#bbb;margin-left:4px">↩</span>` : '';
+
+      const notesText = entry?.notes || '';
+      const notesId = 'notes-' + e.name.replace(/\s/g,'');
+      const notesHtml = notesText
+        ? `<div class="notes-cell-inner" id="${notesId}" onclick="expandNote('${notesId}')">${notesText}</div>
+           <div class="notes-expand-hint" id="${notesId}-hint" onclick="expandNote('${notesId}')">Show more</div>`
+        : `<span style="color:#ddd">—</span>`;
+
+      h += `<tr>
+        <td class="hm-name">${e.name}${stationBadge}${carryBadge}</td>
+        ${cells}
+        <td class="hm-notes">${notesHtml}</td>
+      </tr>`;
+    });
+  });
+
+  h += '</tbody></table>';
+  document.getElementById('hmContent').innerHTML = h;
+
+  // Mobile cards
+  const shortShift = s => ({ Opening:'Open', Mid:'Mid', Closing:'Close', Anytime:'Any', Off:'Off' }[s] || s);
+  let m = '';
+  groups.forEach(g => {
+    m += `<div class="group-label">${g}</div>`;
+    filtered.filter(e => e.group === g).forEach(e => {
+      const entry = allData[e.name];
+      const daysToRender = activeDayFilter === 'all'
+        ? DAYS.map((d,i) => ({ label:d, shift: entry?.days[i] || '' }))
+        : [{ label: DAYS[+activeDayFilter], shift: entry?.days[+activeDayFilter] || '' }];
+      const dayChips = daysToRender.map(({ label, shift }) =>
+        `<div class="person-day"><div class="person-day-label">${label}</div><div class="pdc ${shift ? 'pdc-'+SK(shift) : 'pdc-none'}">${shift ? shortShift(shift) : '—'}</div></div>`
+      ).join('');
+      const stTag = e.station ? `<span style="font-size:10px;font-weight:600;color:var(--gray);text-transform:uppercase;margin-left:5px">${e.station}</span>` : '';
+      const carryTag = entry?.carriedOver ? `<span style="font-size:10px;color:#bbb;margin-left:4px">↩</span>` : '';
+      const notesHtml = entry?.notes ? `<div class="person-notes-row">📝 ${entry.notes}</div>` : '';
+      m += `<div class="person-card">
+        <div class="person-card-top">
+          <div class="person-name">${e.name}${stTag}${carryTag}</div>
+        </div>
+        <div class="person-days" style="grid-template-columns:repeat(${daysToRender.length},1fr)">${dayChips}</div>
+        ${notesHtml}
+      </div>`;
+    });
+  });
+  document.getElementById('mobileContent').innerHTML = m;
+}
+
+function expandNote(id) {
+  const el = document.getElementById(id);
+  const hint = document.getElementById(id + '-hint');
+  if (!el) return;
+  const expanded = el.classList.toggle('expanded');
+  if (hint) hint.textContent = expanded ? 'Show less' : 'Show more';
+}
+
+// ══════════════ SCHEDULING ══════════════
+function renderScheduling() {
+  let html = '';
+  DAYS.forEach((day, i) => {
+    const submittedForDay = EMPLOYEES.filter(e => allData[e.name]?.days[i]).length;
+    const badges = submittedForDay
+      ? `<span class="dsh-badge" style="background:#E8D5FF;color:#3B1A7A">${submittedForDay} available</span>` : '';
+
+    const shiftGroups = {};
+    SHIFTS.forEach(sh => shiftGroups[sh] = []);
+    EMPLOYEES.forEach(e => {
+      const shift = allData[e.name]?.days[i];
+      if (shift) shiftGroups[shift].push(e);
+    });
+
+    const shiftColors = { Opening:'#E6A817', Mid:'#28A745', Closing:'#0066CC', Anytime:'#6F42C1', Off:'#DC3545' };
+    const hasSomeAvail = SHIFTS.some(sh => shiftGroups[sh].length > 0);
+
+    html += `<div class="day-section" id="ds-${i}">
+      <div class="day-section-header" onclick="toggleDay(${i})">
+        <div class="dsh-left">
+          <div><div class="dsh-day">${day}</div><div class="dsh-date">${fmtLong(weekDates[i])}</div></div>
+          <div class="dsh-badges">${badges}</div>
+        </div>
+        <div class="dsh-chevron" id="chev-${i}">▾</div>
+      </div>
+      <div class="day-body" id="db-${i}" style="display:none">
+        <div class="sched-col-label">Team Availability</div>
+        <div class="sched-entries">`;
+
+    if (!hasSomeAvail) {
+      html += `<div class="sg-none">No submissions yet</div>`;
+    } else {
+      SHIFTS.forEach(sh => {
+        if (!shiftGroups[sh].length) return;
+        const people = shiftGroups[sh].map(e => {
+          const st = e.station ? `<span style="font-size:10px;opacity:.7;margin-left:3px">${e.station}</span>` : '';
+          return `<span class="sg-person sg-${SK(sh)}">${e.name}${st}</span>`;
+        }).join('');
+        html += `<div class="shift-group">
+          <div class="sg-label"><div class="sg-dot" style="background:${shiftColors[sh]}"></div>${sh}</div>
+          <div class="sg-people">${people}</div>
+        </div>`;
+      });
+    }
+
+    html += `</div></div></div>`;
+  });
+  document.getElementById('schedContent').innerHTML = html;
+}
+
+function toggleDay(i) {
+  const body = document.getElementById('db-' + i);
+  const header = body.previousElementSibling;
+  const chev = document.getElementById('chev-' + i);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  header.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ══════════════ SUGGESTIONS ══════════════
+const SUGG_KEY = 'stclair_suggestions';
+
+function loadSuggestions() {
+  try { return JSON.parse(localStorage.getItem(SUGG_KEY) || '[]'); } catch { return []; }
+}
+
+function saveSuggestions(list) {
+  localStorage.setItem(SUGG_KEY, JSON.stringify(list));
+}
+
+async function submitSuggestion() {
+  const text = document.getElementById('suggText').value.trim();
+  if (!text) { showToast('Please write something first'); return; }
+  try {
+    await savesSuggestionToSupabase(text);
+    document.getElementById('suggText').value = '';
+    showToast('✓ Suggestion submitted anonymously');
+    switchSuggTab('list');
+  } catch(e) {
+    // fallback to localStorage
+    const list = loadSuggestions();
+    list.unshift({ text, ts: new Date().toISOString() });
+    saveSuggestions(list);
+    document.getElementById('suggText').value = '';
+    showToast('✓ Submitted (offline mode)');
+    switchSuggTab('list');
+  }
+}
+
+async function renderSuggestions() {
+  const container = document.getElementById('suggList');
+  container.innerHTML = '<div class="sugg-empty">Loading…</div>';
+  let list = [];
+  try {
+    const rows = await loadSuggestionsFromSupabase();
+    list = rows.map(r => ({ text: r.text, ts: r.submitted_at }));
+  } catch(e) {
+    // fallback localStorage
+    list = loadSuggestions();
+  }
+  if (!list.length) {
+    container.innerHTML = `<div class="sugg-empty">No suggestions yet — be the first! 🥑</div>`;
+    return;
+  }
+  container.innerHTML = list.map(s => {
+    const d = new Date(s.ts);
+    const when = d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return `<div class="sugg-item">
+      <div class="sugg-item-text">${s.text.replace(/</g,'&lt;')}</div>
+      <div class="sugg-item-meta">Anonymous · ${when}</div>
+    </div>`;
+  }).join('');
+}
+
+function switchSuggTab(tab) {
+  document.getElementById('suggWriteView').style.display = tab === 'write' ? 'block' : 'none';
+  document.getElementById('suggListView').style.display  = tab === 'list'  ? 'block' : 'none';
+  document.getElementById('suggTabWrite').className = 'sugg-tab' + (tab === 'write' ? ' active' : '');
+  document.getElementById('suggTabList').className  = 'sugg-tab' + (tab === 'list'  ? ' active' : '');
+  if (tab === 'list') renderSuggestions();
+}
+
+// ══════════════ LOGO MENU ══════════════
+let menuOpen = false;
+let retroOn = false;
+let musicPlaying = false;
+
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  const overlay = document.getElementById('menuOverlay');
+  const logoImg = document.querySelector('.logo img');
+  if (menuOpen) {
+    overlay.classList.add('open');
+    if (logoImg) logoImg.classList.add('menu-open');
+  } else {
+    closeMenu();
+  }
+}
+
+function closeMenu() {
+  menuOpen = false;
+  const overlay = document.getElementById('menuOverlay');
+  const logoImg = document.querySelector('.logo img');
+  overlay.classList.remove('open');
+  if (logoImg) logoImg.classList.remove('menu-open');
+}
+
+function toggleTheme() {
+  retroOn = !retroOn;
+  document.body.classList.toggle('guac', retroOn);
+  document.getElementById('themeBtnLabel').textContent = retroOn ? 'Back to Original' : 'Switch to Guac Theme';
+  document.getElementById('themeBtn').querySelector('.mi-icon').textContent = retroOn ? '🌿' : '🥑';
+  showToast(retroOn ? '🥑 Guac mode on' : '✨ Original theme restored');
+}
+
+function toggleMusic() {
+  const audio = document.getElementById('elevator');
+  if (musicPlaying) {
+    audio.pause();
+    document.getElementById('musicBtnLabel').textContent = 'Play Resonance';
+    document.getElementById('musicBtn').querySelector('.mi-icon').textContent = '🎵';
+  } else {
+    audio.play().catch(() => showToast('Tap again to play'));
+    document.getElementById('musicBtnLabel').textContent = 'Pause Resonance';
+    document.getElementById('musicBtn').querySelector('.mi-icon').textContent = '⏸️';
+  }
+  musicPlaying = !musicPlaying;
+}
+
+// ══════════════ DOCX DOWNLOAD ══════════════
+async function downloadDocx() {
+  showToast('Generating .docx…');
+
+  // Load fflate dynamically if not already loaded
+  await new Promise((resolve, reject) => {
+    if (window.fflate) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  }).catch(() => { showToast('Error loading library'); return; });
+
+  const weekLabel = fmt(weekDates[0]) + ' – ' + fmt(weekDates[6]);
+
+  // Column widths matching original docx exactly
+  // Name=2261, 7 day cols=1685 each, Weekly=1051 → total=15121
+  const COL_NAME = 2261;
+  const COL_DAY  = 1685;
+  const COL_LAST = 1051; // "Weekly" / Notes col
+  const TOTAL_W  = COL_NAME + COL_DAY * 7 + COL_LAST; // 15121
+
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Build a simple text cell (name column)
+  function nameCell(text, station, width) {
+    const stationRun = station ? `<w:r><w:rPr><w:sz w:val="13"/><w:color w:val="999999"/></w:rPr><w:t xml:space="preserve"> ${esc(station)}</w:t></w:r>` : '';
+    return `<w:tc>
+      <w:tcPr>
+        <w:tcW w:w="${width}" w:type="dxa"/>
+        <w:tcBorders>
+          <w:top w:val="nil"/>
+          <w:left w:val="nil"/>
+          <w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+        </w:tcBorders>
+      </w:tcPr>
+      <w:p>
+        <w:pPr>
+          <w:pStyle w:val="TableParagraph"/>
+          <w:spacing w:line="190" w:lineRule="exact" w:before="34"/>
+          <w:ind w:left="48"/>
+          <w:rPr><w:sz w:val="16"/></w:rPr>
+        </w:pPr>
+        <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r>
+        ${stationRun}
+      </w:p>
+    </w:tc>`;
+  }
+
+  // Day cell — shows availability or empty
+  function dayCell(shift, width) {
+    const shadeMap = { Opening:'FFF3CD', Mid:'D4EDDA', Closing:'CCE5FF', Anytime:'E8D5FF', Off:'F8D7DA' };
+    const textMap  = { Opening:'7A5200', Mid:'155724', Closing:'003880', Anytime:'3B1A7A', Off:'721C24' };
+    const labelMap = { Opening:'Opening', Mid:'Mid', Closing:'Closing', Anytime:'Anytime', Off:'Off' };
+    const fill   = shift ? shadeMap[shift] || 'FFFFFF' : 'FFFFFF';
+    const color  = shift ? textMap[shift]  || '000000' : '000000';
+    const label  = shift ? labelMap[shift] || shift    : '';
+    const shade  = shift ? `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>` : '';
+    return `<w:tc>
+      <w:tcPr>
+        <w:tcW w:w="${width}" w:type="dxa"/>
+        <w:tcBorders>
+          <w:top w:val="nil"/>
+          <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+        </w:tcBorders>
+        ${shade}
+      </w:tcPr>
+      <w:p>
+        <w:pPr>
+          <w:pStyle w:val="TableParagraph"/>
+          <w:spacing w:before="24"/>
+          <w:ind w:left="39"/>
+          <w:jc w:val="center"/>
+          <w:rPr><w:b/><w:color w:val="${color}"/><w:sz w:val="16"/></w:rPr>
+        </w:pPr>
+        ${label ? `<w:r><w:rPr><w:b/><w:color w:val="${color}"/><w:sz w:val="16"/></w:rPr><w:t>${esc(label)}</w:t></w:r>` : '<w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t></w:t></w:r>'}
+      </w:p>
+    </w:tc>`;
+  }
+
+  // Notes/weekly col (last)
+  function notesCell(text, width) {
+    return `<w:tc>
+      <w:tcPr>
+        <w:tcW w:w="${width}" w:type="dxa"/>
+        <w:tcBorders>
+          <w:top w:val="nil"/>
+          <w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+          <w:right w:val="nil"/>
+        </w:tcBorders>
+      </w:tcPr>
+      <w:p>
+        <w:pPr>
+          <w:pStyle w:val="TableParagraph"/>
+          <w:spacing w:before="24"/>
+          <w:ind w:left="30"/>
+          <w:rPr><w:sz w:val="14"/></w:rPr>
+        </w:pPr>
+        <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="555555"/></w:rPr><w:t xml:space="preserve">${esc(text||'')}</w:t></w:r>
+      </w:p>
+    </w:tc>`;
+  }
+
+  // Group header row (gray background, white bold text, spans all 9 cols)
+  function groupHeaderRow(label) {
+    return `<w:tr>
+      <w:trPr><w:trHeight w:val="215" w:hRule="atLeast"/></w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="${TOTAL_W}" w:type="dxa"/>
+          <w:gridSpan w:val="9"/>
+          <w:tcBorders>
+            <w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/>
+          </w:tcBorders>
+          <w:shd w:val="clear" w:color="auto" w:fill="BFBFBF"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:pStyle w:val="TableParagraph"/>
+            <w:spacing w:line="176" w:lineRule="exact" w:before="20"/>
+            <w:ind w:left="63"/>
+            <w:rPr><w:b/><w:sz w:val="16"/></w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="16"/></w:rPr>
+            <w:t>${esc(label)}</w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+    </w:tr>`;
+  }
+
+  // Employee row
+  function employeeRow(emp) {
+    const entry = allData[emp.name];
+    const days  = DAYS.map((_, i) => dayCell(entry?.days[i] || '', COL_DAY)).join('');
+    const notes = entry?.notes || '';
+    return `<w:tr>
+      <w:trPr><w:trHeight w:val="244" w:hRule="atLeast"/></w:trPr>
+      ${nameCell(emp.name, emp.station||'', COL_NAME)}
+      ${days}
+      ${notesCell(notes, COL_LAST)}
+    </w:tr>`;
+  }
+
+  // Build all table rows grouped by role
+  const groupLabels = {
+    'GM': '1 GM/R',
+    'Service Manager': '3 Service Manager',
+    'Kitchen Manager': '4 Kitchen Manager',
+    'CT': '041 Certified Trainer / CT',
+    'Crew': '8 Crew',
+    'Minors': '9 Minors',
+  };
+
+  let tableRows = '';
+  ALL_GROUPS.forEach(g => {
+    tableRows += groupHeaderRow(groupLabels[g] || g);
+    // Deduplicate: only unique employees in this group
+    const seen = new Set();
+    EMPLOYEES.filter(e => e.group === g).forEach(e => {
+      if (seen.has(e.name)) return;
+      seen.add(e.name);
+      tableRows += employeeRow(e);
+    });
+  });
+
+  // Column grid XML
+  const gridCols = [COL_NAME, ...Array(7).fill(COL_DAY), COL_LAST]
+    .map(w => `<w:gridCol w:w="${w}"/>`).join('');
+
+  // Day header paragraph (above table, tab-spaced like original)
+  const dayTabStops = [4485,6132,7851,9627,11290,12939,14321];
+  const tabStopXml = dayTabStops.map(p => `<w:tab w:pos="${p}" w:val="left" w:leader="none"/>`).join('');
+  const dayNames = DAYS.map((d,i) => {
+    const date = weekDates[i].toLocaleDateString('en-US',{month:'numeric',day:'numeric'});
+    return d + ' ' + date;
+  });
+
+  const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+  xmlns:w10="urn:schemas-microsoft-com:office:word"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+  xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+  mc:Ignorable="w14" xml:space="preserve">
+<w:body>
+
+<!-- Header info block -->
+<w:p>
+  <w:pPr><w:ind w:left="72"/><w:rPr><w:b/><w:sz w:val="20"/></w:rPr></w:pPr>
+  <w:r><w:rPr><w:b/><w:sz w:val="20"/></w:rPr><w:t xml:space="preserve">Week of ${esc(fmt(weekDates[0]))} – ${esc(fmt(weekDates[6]))}</w:t></w:r>
+</w:p>
+<w:p>
+  <w:pPr><w:ind w:left="72"/><w:rPr><w:b/><w:sz w:val="20"/></w:rPr></w:pPr>
+  <w:r><w:rPr><w:b/><w:sz w:val="20"/></w:rPr><w:t>5518 on.5518.yongestclair</w:t></w:r>
+</w:p>
+<w:p>
+  <w:pPr><w:ind w:left="72"/><w:spacing w:after="80"/><w:rPr><w:b/><w:sz w:val="20"/></w:rPr></w:pPr>
+  <w:r><w:rPr><w:b/><w:color w:val="C8102E"/><w:sz w:val="22"/></w:rPr><w:t>Chipotle Weekly Availability</w:t></w:r>
+</w:p>
+
+<!-- Day column headers -->
+<w:p>
+  <w:pPr>
+    <w:tabs>${tabStopXml}</w:tabs>
+    <w:spacing w:before="33" w:after="44"/>
+    <w:ind w:left="2763"/>
+    <w:rPr><w:sz w:val="16"/></w:rPr>
+  </w:pPr>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t>${esc(dayNames[0])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>${esc(dayNames[1])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>${esc(dayNames[2])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>${esc(dayNames[3])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>${esc(dayNames[4])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>${esc(dayNames[5])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>${esc(dayNames[6])}</w:t></w:r>
+  <w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:tab/><w:t>Notes</w:t></w:r>
+</w:p>
+
+<!-- Main table -->
+<w:tbl>
+  <w:tblPr>
+    <w:tblW w:w="0" w:type="auto"/>
+    <w:jc w:val="left"/>
+    <w:tblInd w:w="79" w:type="dxa"/>
+    <w:tblBorders>
+      <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+      <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+      <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+      <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+      <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+      <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+    </w:tblBorders>
+    <w:tblLayout w:type="fixed"/>
+    <w:tblCellMar>
+      <w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>
+      <w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/>
+    </w:tblCellMar>
+  </w:tblPr>
+  <w:tblGrid>${gridCols}</w:tblGrid>
+  ${tableRows}
+</w:tbl>
+
+<w:p>
+  <w:pPr><w:spacing w:before="120"/></w:pPr>
+  <w:r><w:rPr><w:sz w:val="14"/><w:color w:val="999999"/></w:rPr>
+    <w:t xml:space="preserve">Generated ${new Date().toLocaleDateString('en-CA')} · ${Object.values(allData).filter(e=>e&&!e.carriedOver).length} of ${EMPLOYEES.length} submitted this week · ↩ = carried over</w:t>
+  </w:r>
+</w:p>
+
+<w:sectPr>
+  <w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/>
+  <w:pgMar w:header="230" w:footer="433" w:top="1180" w:bottom="620" w:left="360" w:right="0"/>
+</w:sectPr>
+</w:body>
+</w:document>`;
+
+  const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault><w:rPr>
+      <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+      <w:sz w:val="16"/><w:szCs w:val="16"/>
+    </w:rPr></w:rPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="TableParagraph">
+    <w:name w:val="Table Paragraph"/>
+    <w:basedOn w:val="Normal"/>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="16"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="BodyText">
+    <w:name w:val="Body Text"/>
+    <w:basedOn w:val="Normal"/>
+  </w:style>
+</w:styles>`;
+
+  const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  const wordRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+  const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+  const enc = new TextEncoder();
+  const files = {
+    '[Content_Types].xml': enc.encode(contentTypesXml),
+    '_rels/.rels': enc.encode(relsXml),
+    'word/document.xml': enc.encode(docXml),
+    'word/styles.xml': enc.encode(stylesXml),
+    'word/_rels/document.xml.rels': enc.encode(wordRelsXml),
+  };
+
+  fflate.zip(files, { level: 6 }, (err, data) => {
+    if (err) { showToast('Error generating file'); return; }
+    const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'StClair_5518_Availability_' + fmt(weekDates[0]).replace(' ','') + '.docx';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('📄 .docx downloaded');
+  });
+}
+
+
+// ══════════════ TABS ══════════════
+function openMenuTab(tab) {
+  // Show the hidden tab in the tab bar then switch to it
+  const hiddenTabs = ['suggestions', 'admin'];
+  hiddenTabs.forEach(t => {
+    const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  closeMenu();
+  switchTab(tab);
+}
+
+function switchTab(tab) {
+  ['submit','overview','scheduling','suggestions','admin'].forEach(t => {
+    document.getElementById(t + '-view').style.display = tab === t ? 'block' : 'none';
+    const tid = 'tab' + t.charAt(0).toUpperCase() + t.slice(1);
+    const el = document.getElementById(tid);
+    if (el) el.className = 'tab' + (tab === t ? ' active' : '');
+  });
+  // Hide suggestions/admin tabs when switching away from them
+  if (!['suggestions','admin'].includes(tab)) {
+    ['suggestions','admin'].forEach(t => {
+      const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (el) el.style.display = 'none';
+    });
+  }
+  if (tab === 'overview') renderOverview();
+  if (tab === 'scheduling') renderScheduling();
+  if (tab === 'suggestions') renderSuggestions();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+const ADMIN_PIN = '5518';
+let adminUnlocked = false;
+let formOverrideOn = false;
+
+init();
+
+// ══════════════ ADMIN ══════════════
+
+function pinNext(el, nextIdx) {
+  if (el.value.length === 1 && nextIdx <= 3) {
+    document.getElementById('pin' + nextIdx).focus();
+  }
+  if (nextIdx > 3) checkPin();
+}
+
+function pinBack(e, el, prevIdx) {
+  if (e.key === 'Backspace' && el.value === '' && prevIdx !== null) {
+    document.getElementById('pin' + prevIdx).focus();
+  }
+}
+
+function checkPin() {
+  const pin = [0,1,2,3].map(i => document.getElementById('pin'+i).value).join('');
+  if (pin === ADMIN_PIN) {
+    adminUnlocked = true;
+    document.getElementById('adminLock').style.display = 'none';
+    document.getElementById('adminPanel').classList.add('unlocked');
+    renderAdminEmployeeList();
+    refreshAdminStats();
+    loadAdminSuggestions();
+    // Check override state
+    document.getElementById('overrideToggle').checked = formOverrideOn;
+  } else if (pin.length === 4) {
+    document.getElementById('pinError').style.display = 'block';
+    [0,1,2,3].forEach(i => { document.getElementById('pin'+i).value = ''; });
+    document.getElementById('pin0').focus();
+  }
+}
+
+function lockAdmin() {
+  adminUnlocked = false;
+  document.getElementById('adminLock').style.display = 'block';
+  document.getElementById('adminPanel').classList.remove('unlocked');
+  [0,1,2,3].forEach(i => { document.getElementById('pin'+i).value = ''; });
+  document.getElementById('pinError').style.display = 'none';
+  switchTab('submit');
+}
+
+async function refreshAdminStats() {
+  const submitted = Object.values(allData).filter(e => e && !e.carriedOver).length;
+  const total = EMPLOYEES.length;
+  document.getElementById('statSubmitted').textContent = submitted;
+  document.getElementById('statPending').textContent = total - submitted;
+  document.getElementById('statTotal').textContent = total;
+}
+
+function renderAdminEmployeeList() {
+  const list = document.getElementById('adminEmpList');
+  document.getElementById('staffCount').textContent = EMPLOYEES.length + ' employees';
+
+  list.innerHTML = EMPLOYEES.map((e, idx) => `
+    <div class="admin-employee-row" id="emprow-${idx}">
+      <div class="admin-emp-name">${e.name}</div>
+      <div class="admin-emp-group">${e.group}</div>
+      <div class="admin-emp-station">${e.station || '—'}</div>
+      <div class="admin-emp-actions">
+        <button class="admin-btn" onclick="editEmployee(${idx})">Edit</button>
+        <button class="admin-btn danger" onclick="removeEmployee(${idx})">Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function editEmployee(idx) {
+  const e = EMPLOYEES[idx];
+  const row = document.getElementById('emprow-' + idx);
+  row.innerHTML = `
+    <input class="admin-input" id="edit-name-${idx}" value="${e.name}" style="flex:1;min-width:80px"/>
+    <select class="admin-select" id="edit-group-${idx}">
+      ${['GM','Service Manager','Kitchen Manager','CT','Crew','Minors'].map(g =>
+        `<option ${g===e.group?'selected':''}>${g}</option>`).join('')}
+    </select>
+    <select class="admin-select" id="edit-station-${idx}" style="max-width:110px">
+      <option value="">— None —</option>
+      ${['Line','Cash','Grill','Prep','CT BOH','CT FOH'].map(s =>
+        `<option ${s===(e.station||'')?'selected':''}>${s}</option>`).join('')}
+    </select>
+    <div class="admin-emp-actions">
+      <button class="admin-btn primary" onclick="saveEmployee(${idx})">Save</button>
+      <button class="admin-btn" onclick="renderAdminEmployeeList()">Cancel</button>
+    </div>
+  `;
+}
+
+async function saveEmployee(idx) {
+  const oldName = EMPLOYEES[idx].name;
+  const name = document.getElementById('edit-name-'+idx).value.trim();
+  const group = document.getElementById('edit-group-'+idx).value;
+  const station = document.getElementById('edit-station-'+idx).value;
+  if (!name) { showToast('Name cannot be empty'); return; }
+  try {
+    await updateEmployeeInSupabase(oldName, name, group, station);
+    EMPLOYEES[idx] = { name, group, station };
+    ALL_GROUPS.length = 0;
+    GROUP_ORDER.filter(g => EMPLOYEES.some(e => e.group === g)).forEach(g => ALL_GROUPS.push(g));
+    // Add any unknown groups at end
+    [...new Set(EMPLOYEES.map(e => e.group))].filter(g => !ALL_GROUPS.includes(g)).forEach(g => ALL_GROUPS.push(g));
+    rebuildNameSelect();
+    buildFilterRows();
+    renderAdminEmployeeList();
+    showToast('✓ Updated ' + name);
+  } catch(e) {
+    showToast('❌ Failed to update — check connection');
+    console.error(e);
+  }
+}
+
+async function removeEmployee(idx) {
+  const name = EMPLOYEES[idx].name;
+  if (!confirm('Remove ' + name + '? This cannot be undone.')) return;
+  try {
+    await deleteEmployeeFromSupabase(name);
+    EMPLOYEES.splice(idx, 1);
+    ALL_GROUPS.length = 0;
+    GROUP_ORDER.filter(g => EMPLOYEES.some(e => e.group === g)).forEach(g => ALL_GROUPS.push(g));
+    // Add any unknown groups at end
+    [...new Set(EMPLOYEES.map(e => e.group))].filter(g => !ALL_GROUPS.includes(g)).forEach(g => ALL_GROUPS.push(g));
+    rebuildNameSelect();
+    buildFilterRows();
+    renderAdminEmployeeList();
+    refreshAdminStats();
+    showToast('Removed ' + name);
+  } catch(e) {
+    showToast('❌ Failed to remove — check connection');
+    console.error(e);
+  }
+}
+
+async function addEmployee() {
+  const name = document.getElementById('newEmpName').value.trim();
+  const group = document.getElementById('newEmpGroup').value;
+  const station = document.getElementById('newEmpStation').value;
+  if (!name) { showToast('Enter a name first'); return; }
+  if (EMPLOYEES.find(e => e.name.toLowerCase() === name.toLowerCase())) {
+    showToast('That name already exists'); return;
+  }
+  try {
+    await addEmployeeToSupabase(name, group, station);
+    EMPLOYEES.push({ name, group, station });
+    // Re-sort alphabetically within group
+    sortEmployees(EMPLOYEES);
+    ALL_GROUPS.length = 0;
+    GROUP_ORDER.filter(g => EMPLOYEES.some(e => e.group === g)).forEach(g => ALL_GROUPS.push(g));
+    // Add any unknown groups at end
+    [...new Set(EMPLOYEES.map(e => e.group))].filter(g => !ALL_GROUPS.includes(g)).forEach(g => ALL_GROUPS.push(g));
+    document.getElementById('newEmpName').value = '';
+    document.getElementById('newEmpStation').value = '';
+    rebuildNameSelect();
+    buildFilterRows();
+    renderAdminEmployeeList();
+    refreshAdminStats();
+    showToast('✓ Added ' + name);
+  } catch(e) {
+    showToast('❌ Failed to add — check connection');
+    console.error(e);
+  }
+}
+
+function rebuildNameSelect() {
+  const sel = document.getElementById('nameSelect');
+  sel.innerHTML = '<option value="">— Select your name —</option>';
+  const groups = [...new Set(EMPLOYEES.map(e => e.group))];
+  groups.forEach(g => {
+    const og = document.createElement('optgroup');
+    og.label = g;
+    EMPLOYEES.filter(e => e.group === g).forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.name;
+      opt.textContent = e.station ? e.name + ' — ' + e.station : e.name;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+}
+
+function toggleOverride(el) {
+  formOverrideOn = el.checked;
+  applyLockState();
+  showToast(formOverrideOn ? '🔓 Form unlocked for everyone' : '🔒 Form back to normal schedule');
+}
+
+async function clearWeekData() {
+  if (!confirm('Clear ALL submissions for this week? This cannot be undone.')) return;
+  try {
+    await sbFetch(`/rest/v1/availability?week_key=eq.${encodeURIComponent(weekKey)}`, 'DELETE');
+    allData = {};
+    localStorage.removeItem(weekKey);
+    refreshAdminStats();
+    showToast('✓ Week data cleared');
+  } catch(e) {
+    showToast('Error clearing data');
+  }
+}
+
+async function loadAdminSuggestions() {
+  const container = document.getElementById('adminSuggList');
+  container.innerHTML = '<div style="color:var(--gray);font-size:13px">Loading…</div>';
+  try {
+    const rows = await loadSuggestionsFromSupabase();
+    if (!rows.length) { container.innerHTML = '<div style="color:var(--gray);font-size:13px">No suggestions yet</div>'; return; }
+    container.innerHTML = rows.map(s => {
+      const when = new Date(s.submitted_at).toLocaleDateString('en-CA', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      return `<div class="admin-sugg-item">
+        <div class="admin-sugg-text">
+          ${s.text.replace(/</g,'&lt;')}
+          <div class="admin-sugg-meta">Anonymous · ${when}</div>
+        </div>
+        <button class="admin-btn danger" onclick="deleteSuggestion('${s.id}', this)">Delete</button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="color:#DC3545;font-size:13px">Failed to load</div>';
+  }
+}
+
+async function deleteSuggestion(id, btn) {
+  btn.disabled = true;
+  try {
+    await sbFetch(`/rest/v1/suggestions?id=eq.${id}`, 'DELETE');
+    btn.closest('.admin-sugg-item').remove();
+    showToast('Suggestion deleted');
+  } catch(e) {
+    showToast('Error deleting suggestion');
+    btn.disabled = false;
+  }
+}
+
+// Update switchTab to include admin + lock check
+</script>
+</body>
+</html>
