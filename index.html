@@ -1061,6 +1061,11 @@ async function init() {
   if (mwl) mwl.textContent = fmt(weekDates[0]) + ' – ' + fmt(weekDates[6]);
 
   applyLockState();
+  // Restore tab from URL hash
+  const hash = window.location.hash.replace('#','');
+  if (['submit','overview','scheduling'].includes(hash)) {
+    switchTab(hash);
+  }
   // Load live data from Supabase
   loadDataAsync();
 }
@@ -1826,6 +1831,10 @@ function openMenuTab(tab) {
 }
 
 function switchTab(tab) {
+  // Save to URL hash so refresh restores position
+  if (['submit','overview','scheduling'].includes(tab)) {
+    history.replaceState(null, '', '#' + tab);
+  }
   ['submit','overview','scheduling','suggestions','admin'].forEach(t => {
     document.getElementById(t + '-view').style.display = tab === t ? 'block' : 'none';
     const tid = 'tab' + t.charAt(0).toUpperCase() + t.slice(1);
