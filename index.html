@@ -999,7 +999,11 @@ async function loadDataAsync() {
     localStorage.setItem(weekKey, JSON.stringify(cache));
 
     showLoadingState(false);
-    renderOverview();
+    // Re-render whichever tab is currently active
+    const activeTab = window.location.hash.replace('#','') || 'submit';
+    if (activeTab === 'overview') renderOverview();
+    else if (activeTab === 'scheduling') renderScheduling();
+    else renderOverview(); // always keep overview fresh in background
   } catch(e) {
     console.error('Failed to load from Supabase, using cache:', e);
     // Fallback to localStorage
