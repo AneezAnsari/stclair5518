@@ -930,12 +930,19 @@ let ALL_GROUPS = GROUP_ORDER.filter(g => EMPLOYEES.some(e => e.group === g));
 
 function getWeekDates() {
   const today = new Date();
-  const day = today.getDay();
-  const mon = new Date(today);
-  mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1) + 7);
+  today.setHours(0,0,0,0);
+  const day = today.getDay(); // 0=Sun,1=Mon,...,6=Sat
+  // Find next Monday
+  const daysToNextMon = day === 0 ? 1 : 8 - day;
+  const nextMon = new Date(today);
+  nextMon.setDate(today.getDate() + daysToNextMon);
+  // If next Monday is within 2 days (i.e. today is Sat or Sun),
+  // people are submitting for the week AFTER next — add 7 more
+  const finalMon = new Date(nextMon);
+  if (daysToNextMon <= 2) finalMon.setDate(nextMon.getDate() + 7);
   return Array.from({length:7}, function(_,i) {
-    const d = new Date(mon);
-    d.setDate(mon.getDate()+i);
+    const d = new Date(finalMon);
+    d.setDate(finalMon.getDate()+i);
     return d;
   });
 }
