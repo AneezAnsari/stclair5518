@@ -628,7 +628,7 @@ body.guac .locked-banner { background: linear-gradient(135deg, #2C3E1A, #3D5C20)
   <div id="suggWriteView">
     <div class="sugg-form-card">
       <div class="field-label">Your suggestion (anonymous)</div>
-      <textarea class="sugg-textarea" id="suggText" placeholder="Any ideas to improve the schedule, the app ? Write it here dw no one will know it's you😈."></textarea>
+      <textarea class="sugg-textarea" id="suggText" placeholder="Any ideas to improve the schedule, the app, or the store? Write it here — no one will know it's you."></textarea>
       <button class="sugg-submit" onclick="submitSuggestion()">Submit anonymously</button>
     </div>
   </div>
@@ -652,7 +652,7 @@ body.guac .locked-banner { background: linear-gradient(135deg, #2C3E1A, #3D5C20)
       <input class="admin-pin-input" id="pin3" maxlength="1" type="password" inputmode="numeric" oninput="checkPin()" onkeydown="pinBack(event,this,2)"/>
     </div>
     <button class="admin-pin-btn" onclick="checkPin()">Unlock</button>
-    <div id="pinError" style="color:#DC3545;font-size:12px;margin-top:10px;display:none">Wrong PIN — dont try again</div>
+    <div id="pinError" style="color:#DC3545;font-size:12px;margin-top:10px;display:none">Wrong PIN — try again</div>
   </div>
 
   <!-- ADMIN PANEL (shown after PIN) -->
